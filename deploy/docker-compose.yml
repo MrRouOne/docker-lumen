@@ -1,0 +1,71 @@
+version: "3.8"
+
+services:
+
+  app:
+    container_name: app_container
+    build:
+      context: ../project/
+      dockerfile: ../deploy/php/Dockerfile
+    restart: unless-stopped
+    tty: true
+    working_dir: /var/www
+    volumes:
+      - ../project/:/var/www
+    networks:
+      - app-network
+
+  nginx:
+    container_name: nginx_container
+    build: nginx
+    ports:
+      - "81:80"
+    volumes:
+      - ../project/:/var/www
+      - ./nginx/conf.d/:/etc/nginx/conf.d/
+      - ../project/public:/var/www/public
+
+    networks:
+      - app-network
+
+  db:
+    image: postgres:13.2-alpine
+    container_name: db_container
+    tty: true
+    restart: unless-stopped
+
+    ports:
+      - "5434:5432"
+
+    environment:
+      POSTGRES_DB: "lumen"
+      POSTGRES_USER: "root"
+      POSTGRES_PASSWORD: "root"
+      PGDATA: "/var/lib/postgresql/data/pgdata"
+
+    volumes:
+      - postgresdbdata:/var/lib/postgresql/data
+
+    networks:
+      - app-network
+
+  pgadmin:
+    container_name: pgadmin
+    image: dpage/pgadmin4
+
+    environment:
+      PGADMIN_DEFAULT_EMAIL: email@mail.com
+      PGADMIN_DEFAULT_PASSWORD: 123456
+
+    ports:
+      - "5050:80"
+
+volumes:
+  postgresdbdata:
+    driver: local
+
+#NETWORKS
+
+networks:
+  app-network:
+    driver: bridge

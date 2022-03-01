@@ -12,7 +12,8 @@
 | and give it the Closure to call when that URI is requested.
 |
 */
+use App\Models\Flight;
 
 $router->get('/gg', function () use ($router) {
-    return "GG4";
+    return response()->json(app('db')->select('SELECT * FROM flights'),200);
 });
