@@ -12,8 +12,25 @@
 | and give it the Closure to call when that URI is requested.
 |
 */
-use App\Models\Flight;
 
-$router->get('/gg', function () use ($router) {
-    return response()->json(app('db')->select('SELECT * FROM flights'),200);
+use App\Models\User;
+use App\Http\Controllers\UserController;
+use Laravel\Lumen\Http\Request;
+
+
+$router->group(['prefix' => 'api'], function () use ($router) {
+
+    $router->group(['prefix' => 'users'], function () use ($router) {
+        $router->post('/login', 'AuthController@login');
+        $router->get('/','UserController@index');
+        $router->post('/register','AuthController@register');
+        $router->put('/{id}','UserController@update');
+        $router->delete('/{id}','UserController@delete');
+    });
+
+    $router->group(['prefix' => 'courses','middleware' => 'auth:api'], function () use ($router) {
+        $router->get('/','CourseController@index');
+        $router->post('/','CourseController@create');
+    });
+
 });
