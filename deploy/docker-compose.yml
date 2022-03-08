@@ -24,7 +24,7 @@ services:
       - ../project/public:/var/www/public
 
   db:
-    image: postgres:14-alpine
+    image: postgres
     container_name: db_container
     tty: true
     restart: unless-stopped
