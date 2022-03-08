@@ -8,7 +8,6 @@ use Illuminate\Support\Facades\Auth;
 
 class AuthController extends Controller
 {
-
     public function register(Request $request)
     {
         $this->validate($request, [
@@ -34,11 +33,11 @@ class AuthController extends Controller
                 'last_name' => $request->input('last_name'),
                 'first_name' => $request->input('first_name')
             ]);
-
-            return response()->json(['user' => $user, 'message' => 'CREATED'], 201);
+            $user->makeHidden(['password', 'is_admin']);
+            return response()->json(['user' => $user, 'message' => 'Success registration'], 201);
 
         } catch (\Exception $e) {
-            return response()->json(['message' => 'User Registration Failed!'], 409);
+            return response()->json(['message' => 'User registration failed!'], 409);
         }
     }
 
@@ -52,9 +51,8 @@ class AuthController extends Controller
         $credentials = $request->only(['email', 'password']);
 
         if (!$token = Auth::attempt($credentials)) {
-            return response()->json(['message' => 'Unauthorized'], 401);
+            return response()->json(['message' => 'Incorrect data'], 401);
         }
-
         return $this->respondWithToken($token);
     }
 }

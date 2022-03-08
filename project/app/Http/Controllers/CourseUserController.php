@@ -3,8 +3,8 @@
 namespace App\Http\Controllers;
 
 use App\Events\DoubleCourseEvent;
-use App\Events\ExampleEvent;
 use App\Events\FreePlaceCourseEvent;
+use App\Models\Course;
 use App\Models\CourseUser;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
@@ -18,17 +18,24 @@ class CourseUserController extends Controller
         ]);
 
         try {
-            if (!event(new DoubleCourseEvent(Auth::user()->id, $request->input('course_id')))) {
-                return response()->json(['message' => 'You already registered to this course.'], 201);
+            $course_id = $request->input('course_id');
+            $course = Course::find($course_id);
+
+            if (!isset($course->id)) {
+                return response()->json(['message' => 'Incorrect field: course_id'], 400);
             }
 
-            if (!event(new FreePlaceCourseEvent($request->input('course_id')))) {
-                return response()->json(['message' => 'Place are over.'], 201);
+            if (!event(new DoubleCourseEvent(Auth::user()->id, $course_id))) {
+                return response()->json(['message' => 'You already registered to this course.'], 403);
+            }
+
+            if (!event(new FreePlaceCourseEvent($course_id))) {
+                return response()->json(['message' => 'Place are over.'], 403);
             }
 
             CourseUser::create([
                 'user_id' => Auth::user()->id,
-                'course_id' => $request->input('course_id'),
+                'course_id' => $course_id,
                 'percentage_passing' => 0,
             ]);
 

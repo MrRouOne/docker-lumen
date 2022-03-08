@@ -9,36 +9,22 @@ class UserController extends Controller
 {
     public function index()
     {
-        $users = User::all();
-        foreach ($users as $user) {
-            $user->load(['courses' => function ($q) {
-                $q->orderBy('pivot_percentage_passing');
-            }]);
-        }
-
-        return response()->json(['users' => $users], 409);
-    }
-
-    public function create(Request $request)
-    {
-        $user = User::create($request->all());
-
-        return response()->json([
-            'data' => [
-                'id' => $user->id,
-                'status' => 'created'
-            ]
-        ], 201);
+        $users = User::with(['courses' => function ($q) {
+            $q->orderBy('pivot_percentage_passing');
+        }])->get();
+        return response()->json(['users' => $users], 200);
     }
 
     public function update(Request $request, $id)
     {
+        $user = User::find($id);
+
         $this->validate($request, [
-            'email' => 'required|email|unique:users|max:256',
+            'email' => "required|email|unique:users,email,{$user->id}|max:256",
             'password' => 'required|string|max:256',
             'phone' =>
                 array(
-                    'unique:users',
+                    "unique:users,phone,{$user->id}",
                     'required',
                     'max:16',
                     'string',
@@ -49,16 +35,10 @@ class UserController extends Controller
         ]);
 
         try {
-            $user = User::find($id);
             $user->update($request->all());
             $user->update(['password' => app('hash')->make($request->password)]);
-
-            return response()->json([
-                'data' => [
-                    'id' => $user->id,
-                    'status' => 'updated'
-                ]
-            ], 200);
+            $user->makeHidden(['password', 'is_admin']);
+            return response()->json(['user' => $user, 'message' => 'Success update'], 200);
 
         } catch (\Exception $e) {
             return response()->json(['message' => 'Update failed!'], 409);
@@ -71,19 +51,12 @@ class UserController extends Controller
             $user = User::find($id);
             $user->delete();
 
-            return response()->json([
-                'data' => [
-                    'id' => $user->id,
-                    'status' => 'deleted'
-                ]
-            ], 200);
-
+            $user->makeHidden(['password', 'is_admin']);
+            return response()->json(['user' => $user, 'message' => 'Success delete'], 200);
 
         } catch (\Exception $e) {
             return response()->json(['message' => 'Delete failed!'], 409);
         }
-
-
     }
 }
 

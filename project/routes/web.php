@@ -13,10 +13,6 @@
 |
 */
 
-use App\Models\User;
-use App\Http\Controllers\UserController;
-use Laravel\Lumen\Http\Request;
-
 
 $router->group(['prefix' => 'api'], function () use ($router) {
 

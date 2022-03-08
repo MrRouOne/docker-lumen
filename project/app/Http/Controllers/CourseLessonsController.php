@@ -12,10 +12,10 @@ class CourseLessonsController extends Controller
         try {
             $courseID = $request->course_id;
             $lessons = Lesson::where('course_id', $courseID)->get();
-            return response()->json(['lessons' => $lessons, 'message' => 'Success'], 201);
+            return response()->json(['lessons' => $lessons], 200);
 
         } catch (\Exception $e) {
-            return response()->json(['message' => 'Update failed!'], 409);
+            return response()->json(['message' => 'Output failed!'], 409);
         }
     }
 }
