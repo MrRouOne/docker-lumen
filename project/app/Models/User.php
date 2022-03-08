@@ -39,4 +39,9 @@ class User extends Model implements AuthenticatableContract, AuthorizableContrac
     {
         return [];
     }
+
+    public function courses()
+    {
+        return $this->belongsToMany(Course::class,'course_users')->withPivot('percentage_passing');
+    }
 }

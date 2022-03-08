@@ -21,16 +21,33 @@ use Laravel\Lumen\Http\Request;
 $router->group(['prefix' => 'api'], function () use ($router) {
 
     $router->group(['prefix' => 'users'], function () use ($router) {
+
         $router->post('/login', 'AuthController@login');
-        $router->get('/','UserController@index');
-        $router->post('/register','AuthController@register');
-        $router->put('/{id}','UserController@update');
-        $router->delete('/{id}','UserController@delete');
+        $router->post('/register', 'AuthController@register');
+
+        $router->group(['prefix' => '/', 'middleware' => ['auth', 'admin']], function () use ($router) {
+            $router->get('', 'UserController@index');
+        });
+
+        $router->group(['prefix' => '/{id}', 'middleware' => ['auth', 'owner']], function () use ($router) {
+            $router->put('', 'UserController@update');
+            $router->delete('', 'UserController@delete');
+        });
     });
 
-    $router->group(['prefix' => 'courses','middleware' => 'auth:api'], function () use ($router) {
-        $router->get('/','CourseController@index');
-        $router->post('/','CourseController@create');
+    $router->group(['prefix' => 'courses'], function () use ($router) {
+
+        $router->group(['middleware' => ['auth', 'admin']], function () use ($router) {
+            $router->post('/', 'CourseController@create');
+        });
+
+        $router->get('/', 'CourseController@index');
     });
 
+    $router->post('course_users', ['middleware' => 'auth', 'uses' => 'CourseUserController@register']);
+
+    $router->get('course_lessons', ['uses' => 'CourseLessonsController@index']);
+
+    $router->put('course_lesson_users/{id}',
+        ['middleware' => 'auth', 'uses' => 'CourseLessonUsersController@registration']);
 });

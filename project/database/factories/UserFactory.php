@@ -23,7 +23,7 @@ class UserFactory extends Factory
     {
         return [
             'email' => $this->faker->email,
-            'password' => $this->faker->word,
+            'password' => app('hash')->make($this->faker->word),
             'phone' => "+".random_int(1,8)."(".random_int(100,999).")".random_int(100,999)."-".random_int(10,99)."-".random_int(10,99),
             'first_name' => $this->faker->firstName,
             'last_name' => $this->faker->lastName,

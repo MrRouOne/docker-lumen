@@ -2,14 +2,15 @@
 
 namespace App\Http\Middleware;
 
+use Illuminate\Http\Exceptions\HttpResponseException;
 use Illuminate\Auth\Middleware\Authenticate as Middleware;
 
 class Authenticate extends Middleware
 {
-    protected function redirectTo($request)
+    protected function unauthenticated($request, array $guards)
     {
-        if (!$request->expectsJson()) {
-            abort(response()->json('Unauthorized', 403));
-        }
+       throw new HttpResponseException(response()->json([
+        "error"=>"Вы не авторизированы!"
+           ]));
     }
 }

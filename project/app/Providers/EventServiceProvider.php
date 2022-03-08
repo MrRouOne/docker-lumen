@@ -2,6 +2,10 @@
 
 namespace App\Providers;
 
+use App\Events\DoubleCourseEvent;
+use App\Events\FreePlaceCourseEvent;
+use App\Listeners\DoubleCourseListener;
+use App\Listeners\FreePlaceCourseListener;
 use Laravel\Lumen\Providers\EventServiceProvider as ServiceProvider;
 
 class EventServiceProvider extends ServiceProvider
@@ -12,8 +16,11 @@ class EventServiceProvider extends ServiceProvider
      * @var array
      */
     protected $listen = [
-        \App\Events\ExampleEvent::class => [
-            \App\Listeners\ExampleListener::class,
+        DoubleCourseEvent::class => [
+            DoubleCourseListener::class,
+        ],
+        FreePlaceCourseEvent::class => [
+            FreePlaceCourseListener::class,
         ],
     ];
 

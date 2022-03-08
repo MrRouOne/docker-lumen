@@ -11,37 +11,39 @@ class AuthController extends Controller
 
     public function register(Request $request)
     {
-        //validate incoming request
         $this->validate($request, [
-//            'email' => 'required|email|unique:users',
-//            'password' => 'required|confirmed',
+            'email' => 'required|email|unique:users|max:256',
+            'password' => 'required|string|max:256',
+            'phone' =>
+                array(
+                    'unique:users',
+                    'required',
+                    'max:16',
+                    'string',
+                    'regex:/^\+?[1-9]{1}\(?[0-9]{3}\)?[0-9]{3}-[0-9]{2}-[0-9]{2}$/'
+                ),
+            'last_name' => 'required|string|max:64',
+            'first_name' => 'required|string|max:64',
         ]);
 
         try {
+            $user = User::create([
+                'email' => $request->input('email'),
+                'password' => app('hash')->make($request->input('password')),
+                'phone' => $request->input('phone'),
+                'last_name' => $request->input('last_name'),
+                'first_name' => $request->input('first_name')
+            ]);
 
-            $user = new User;
-            $user->email = $request->input('email');
-            $plainPassword = $request->input('password');
-            $user->password = app('hash')->make($plainPassword);
-            $user->phone = $request->input('phone');
-            $user->last_name = $request->input('last_name');
-            $user->first_name = $request->input('first_name');
-
-            $user->save();
-
-            //return successful response
             return response()->json(['user' => $user, 'message' => 'CREATED'], 201);
 
         } catch (\Exception $e) {
-            //return error message
             return response()->json(['message' => 'User Registration Failed!'], 409);
         }
-
     }
 
     public function login(Request $request)
     {
-        //validate incoming request
         $this->validate($request, [
             'email' => 'required|string',
             'password' => 'required|string',
@@ -49,11 +51,10 @@ class AuthController extends Controller
 
         $credentials = $request->only(['email', 'password']);
 
-        if (! $token = Auth::attempt($credentials)) {
+        if (!$token = Auth::attempt($credentials)) {
             return response()->json(['message' => 'Unauthorized'], 401);
         }
 
         return $this->respondWithToken($token);
     }
-
 }
